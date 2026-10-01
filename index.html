@@ -33,7 +33,7 @@
             color: var(--crimson);
             font-family: 'Share Tech Mono', monospace;
             margin: 0;
-            height: 100dvh; /* Mobile browser height fix */
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -41,6 +41,7 @@
             user-select: none;
         }
 
+        /* Scanline overlay */
         body::before {
             content: " ";
             display: block;
@@ -56,6 +57,7 @@
             font-family: 'Chakra Petch', sans-serif;
         }
 
+        /* Cyberpunk styling for containers */
         .cyber-border {
             position: relative;
             background: rgba(20, 0, 5, 0.6);
@@ -70,6 +72,7 @@
         .cyber-border::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
         .cyber-border::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
+        /* Tactical buttons */
         .btn-cyber {
             background: rgba(20, 0, 5, 0.8);
             border: 1px solid var(--crimson-dim);
@@ -96,6 +99,7 @@
             box-shadow: var(--glow-intense);
         }
 
+        /* Animations */
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         .cursor-blink { animation: blink 1s step-end infinite; }
         
@@ -106,10 +110,12 @@
         }
         .flicker-text { animation: textShadowFlicker 3s infinite; }
 
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--black); }
         ::-webkit-scrollbar-thumb { background: var(--crimson-dim); }
 
+        /* Leaflet overrides for theme integration */
         .leaflet-container {
             background: #050505;
             font-family: 'Share Tech Mono', monospace;
@@ -122,6 +128,7 @@
         }
         .leaflet-control-attribution a { color: var(--crimson) !important; }
 
+        /* Custom Blip Marker */
         .blip-marker {
             background-color: var(--crimson);
             border-radius: 50%;
@@ -133,6 +140,7 @@
 
 <body class="p-3 pt-12 sm:p-6 sm:pt-12 relative z-0 flex flex-col gap-3">
     
+    <!-- Top Header -->
     <header class="relative z-10 flex flex-col gap-1 border-b border-red-900/50 pb-2 flex-none">
         <div class="flex justify-between items-start">
             <div class="title-font text-2xl sm:text-3xl font-bold tracking-widest text-red-600 flicker-text">
@@ -146,6 +154,7 @@
         </div>
     </header>
 
+    <!-- Diagnostics Terminal -->
     <div id="terminal" class="cyber-border flex-none h-24 sm:h-32 overflow-y-auto p-2 text-xs font-mono relative z-10 flex flex-col">
         <div id="log-content" class="flex-grow whitespace-pre-wrap leading-relaxed"></div>
         <div class="mt-1">
@@ -155,12 +164,13 @@
         </div>
     </div>
 
+    <!-- Main Content Area -->
     <main class="flex-grow relative z-10 flex flex-col gap-3 overflow-y-auto pb-4">
         
         <!-- INITIALIZATION BUTTON -->
         <button id="btn-engage" onclick="hud.engage()" class="btn-cyber-primary w-full py-8 text-xl sm:text-2xl title-font font-bold flex flex-col items-center justify-center gap-2 my-auto">
             <svg class="w-8 h-8 mb-1 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
-            START TELEMETRY
+            START SCAN
         </button>
 
         <!-- ACTIVE HUD (Hidden initially) -->
@@ -185,23 +195,26 @@
                 </div>
             </div>
 
+            <!-- Environment and AI Prompt Section -->
             <div class="cyber-border p-2 bg-red-950/10 flex flex-col gap-1">
                 <span class="text-[9px] text-white/50 tracking-widest block uppercase">Environmental Scan</span>
                 <div id="env-desc" class="text-xs text-red-400 min-h-[1rem]">AWAITING COORDINATES...</div>
                 
                 <span class="text-[9px] text-white/50 tracking-widest block mt-2 uppercase">Gemini AI Uplink Prompt</span>
                 <textarea id="ai-prompt" class="w-full bg-black/60 border border-red-900/50 text-red-500 text-[10px] sm:text-xs p-2 h-16 resize-none font-mono focus:outline-none" readonly>WAITING FOR ENVIRONMENTAL SCAN...</textarea>
-                <button onclick="hud.copyPrompt()" class="btn-cyber text-[10px] py-1 mt-1 uppercase tracking-widest w-full">
+                <button onclick="hud.copyPrompt()" class="btn-cyber text-[10px] py-2 mt-1 uppercase tracking-widest w-full font-bold">
                     COPY TO CLIPBOARD
                 </button>
             </div>
 
+            <!-- Leaflet Map Integration -->
             <div class="cyber-border flex-grow min-h-[150px] relative p-1">
                 <div class="absolute top-0 left-0 w-full h-full z-20 pointer-events-none shadow-[inset_0_0_20px_rgba(0,0,0,1)] border border-red-900/30"></div>
-                <!-- Applying filters to ensure map looks fully integrated with the HUD theme -->
+                <!-- Applying CSS filters to perfectly match the red/black HUD aesthetic -->
                 <div id="map" class="w-full h-full z-10 filter grayscale sepia-[.3] hue-rotate-[320deg] contrast-125"></div>
             </div>
 
+            <!-- Routing Actions -->
             <div class="grid grid-cols-2 gap-2 mt-auto flex-none pb-2">
                 <button onclick="hud.route('apple')" class="btn-cyber-primary py-2 text-[10px] title-font font-bold tracking-widest">
                     APPLE MAPS
@@ -218,8 +231,9 @@
         // =========================================================================
         // SYSTEM CONFIGURATION
         // =========================================================================
-        // Optional: Provide an Expo Maps API Key here to route tile requests.
-        // If left as default, the system will fallback to CartoDB Dark Matter tiles.
+        // If this is set to exactly "YOUR_API_KEY_HERE", null, or an empty string, 
+        // the system will completely ignore it and silently fall back to the open-source 
+        // CartoDB Dark Matter tile set with zero on-screen errors.
         const EXPO_MAPS_API_KEY = "YOUR_API_KEY_HERE";
         // =========================================================================
 
@@ -297,12 +311,6 @@
             async bootSequence() {
                 await this.typeLine("INITIALIZING MYSTHOOD KERNEL v5.1.0...");
                 await this.typeLine("LOADING CARTOGRAPHY MODULES... OK");
-                
-                // Expose API Key Configuration State in Terminal
-                if (EXPO_MAPS_API_KEY !== "YOUR_API_KEY_HERE" && EXPO_MAPS_API_KEY.trim() !== "") {
-                    await this.typeLine("EXPO MAPS API KEY DETECTED. PREPARING TILE ROUTING...", "warn");
-                }
-
                 await this.typeLine("CHECKING HARDWARE SENSORS...");
                 
                 if ("geolocation" in navigator) {
@@ -326,6 +334,7 @@
                     this.printLog("INSECURE CONTEXT DETECTED. BROWSER MAY BLOCK GPS POLL.", "warn");
                 }
 
+                // Polling the GPS hardware
                 this.state.watchId = navigator.geolocation.watchPosition(
                     (pos) => this.handleTelemetry(pos),
                     (err) => this.handleError(err),
@@ -336,6 +345,7 @@
             handleTelemetry(position) {
                 const { latitude, longitude, accuracy, speed } = position.coords;
                 
+                // First lock setup
                 if (!this.state.lat) {
                     this.ui.status.innerHTML = `SYS.STATUS: <span class="text-white font-bold">LOCKED</span>`;
                     this.ui.activeHud.classList.remove('hidden');
@@ -359,7 +369,7 @@
 
                 this.updateMap(latitude, longitude);
 
-                // Fetch environment data only once upon first lock to save bandwidth
+                // Fetch environment data only once upon first lock
                 if (!this.state.geocoded) {
                     this.fetchEnvironmentData(latitude, longitude);
                 }
@@ -378,17 +388,17 @@
                 if (!this.state.lat) {
                     this.ui.btnEngage.classList.remove('hidden');
                     this.ui.btnEngage.classList.add('flex');
-                    this.ui.btnEngage.innerHTML = "RETRY UPLINK";
+                    this.ui.btnEngage.innerHTML = "RETRY SCAN";
                 }
             },
 
             async fetchEnvironmentData(lat, lng) {
-                this.state.geocoded = true; // Prevent spamming the API
+                this.state.geocoded = true; 
                 this.printLog("INITIATING ENVIRONMENTAL SCAN...");
                 this.ui.envDesc.innerText = "SCANNING DATABASE...";
 
                 try {
-                    // Using public Nominatim API. No key required.
+                    // OpenStreetMap Nominatim reverse geocoding API
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
                     if (!response.ok) throw new Error("Network response was not ok");
                     
@@ -421,7 +431,7 @@
                     await navigator.clipboard.writeText(text);
                     this.printLog("AI PROMPT COPIED TO SECURE CLIPBOARD.");
                 } catch (err) {
-                    // Fallback for older browsers or non-secure contexts
+                    // Fallback for older browsers
                     this.ui.aiPrompt.select();
                     document.execCommand('copy');
                     this.printLog("AI PROMPT COPIED (LEGACY FALLBACK).", "warn");
@@ -441,26 +451,31 @@
                     boxZoom: false
                 }).setView([lat, lng], 17);
 
+                // Default Fallback: CartoDB Dark Matter
                 let tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-                let tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+                let tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-                // Check if User Provided an Expo Maps API Key
-                if (EXPO_MAPS_API_KEY !== "YOUR_API_KEY_HERE" && EXPO_MAPS_API_KEY.trim() !== "") {
-                    this.printLog("ROUTING TILE REQUESTS VIA EXPO MAPS INFRASTRUCTURE...");
-                    // Simulated endpoint format for an Expo mapped web implementation
+                // Robust API Key Check Logic - completely silent if it fails
+                const hasValidExpoKey = EXPO_MAPS_API_KEY && 
+                                        typeof EXPO_MAPS_API_KEY === 'string' && 
+                                        EXPO_MAPS_API_KEY.trim() !== '' && 
+                                        EXPO_MAPS_API_KEY !== 'YOUR_API_KEY_HERE';
+
+                if (hasValidExpoKey) {
+                    // Use custom routing if a valid key is provided
                     tileUrl = `https://api.expo.dev/v1/maps/tiles/{z}/{x}/{y}?key=${EXPO_MAPS_API_KEY}`;
-                    tileAttribution = '&copy; <a href="https://expo.dev">Expo Maps Ecosystem</a>';
-                } else {
-                    this.printLog("NO EXPO KEY DETECTED. DEFAULTING TO CARTODB DARK MATTER TILES.");
+                    tileAttribution = '&copy; Expo Maps Ecosystem';
+                    this.printLog("CUSTOM TILE ROUTING ENGAGED.");
                 }
 
+                // Add the tile layer regardless of which URL was chosen
                 L.tileLayer(tileUrl, {
                     attribution: tileAttribution,
                     subdomains: 'abcd',
                     maxZoom: 20
                 }).addTo(this.state.map);
 
-                // Custom blip marker for HUD styling
+                // Custom blip marker
                 const blipIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: "<div class='blip-marker' style='width: 14px; height: 14px;'></div>",
@@ -471,10 +486,10 @@
                 this.state.marker = L.marker([lat, lng], {icon: blipIcon}).addTo(this.state.map);
                 this.state.mapInitialized = true;
                 
-                // Force layout recalculation to ensure map fits div perfectly
+                // Force layout recalculation to fix mobile scaling glitches
                 setTimeout(() => {
                     this.state.map.invalidateSize();
-                }, 200);
+                }, 300);
             },
 
             updateMap(lat, lng) {
@@ -494,10 +509,8 @@
                 this.printLog(`EXPORTING VECTOR TO ${service.toUpperCase()} MAPS...`);
                 
                 if (service === 'apple') {
-                    // Triggers native Apple Maps on iOS
                     window.location.href = `http://maps.apple.com/?ll=${this.state.lat},${this.state.lng}&q=Target_Vector`;
                 } else if (service === 'google') {
-                    // Triggers native Google Maps or web fallback
                     window.open(`https://www.google.com/maps/search/?api=1&query=${this.state.lat},${this.state.lng}`, '_blank');
                 }
             }
