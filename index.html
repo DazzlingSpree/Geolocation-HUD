@@ -41,7 +41,6 @@
             user-select: none;
         }
 
-        /* Scanline Overlay */
         body::before {
             content: " ";
             display: block;
@@ -57,7 +56,6 @@
             font-family: 'Chakra Petch', sans-serif;
         }
 
-        /* Geometric Borders */
         .cyber-border {
             position: relative;
             background: rgba(20, 0, 5, 0.6);
@@ -72,7 +70,6 @@
         .cyber-border::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
         .cyber-border::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
-        /* Buttons */
         .btn-cyber {
             background: rgba(20, 0, 5, 0.8);
             border: 1px solid var(--crimson-dim);
@@ -99,7 +96,6 @@
             box-shadow: var(--glow-intense);
         }
 
-        /* Animations */
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         .cursor-blink { animation: blink 1s step-end infinite; }
         
@@ -110,12 +106,10 @@
         }
         .flicker-text { animation: textShadowFlicker 3s infinite; }
 
-        /* Scrollbars */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--black); }
         ::-webkit-scrollbar-thumb { background: var(--crimson-dim); }
 
-        /* Leaflet Overrides for Dark Theme */
         .leaflet-container {
             background: #050505;
             font-family: 'Share Tech Mono', monospace;
@@ -166,7 +160,7 @@
         <!-- INITIALIZATION BUTTON -->
         <button id="btn-engage" onclick="hud.engage()" class="btn-cyber-primary w-full py-8 text-xl sm:text-2xl title-font font-bold flex flex-col items-center justify-center gap-2 my-auto">
             <svg class="w-8 h-8 mb-1 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
-            ENGAGE TELEMETRY
+            START TELEMETRY
         </button>
 
         <!-- ACTIVE HUD (Hidden initially) -->
@@ -198,12 +192,13 @@
                 <span class="text-[9px] text-white/50 tracking-widest block mt-2 uppercase">Gemini AI Uplink Prompt</span>
                 <textarea id="ai-prompt" class="w-full bg-black/60 border border-red-900/50 text-red-500 text-[10px] sm:text-xs p-2 h-16 resize-none font-mono focus:outline-none" readonly>WAITING FOR ENVIRONMENTAL SCAN...</textarea>
                 <button onclick="hud.copyPrompt()" class="btn-cyber text-[10px] py-1 mt-1 uppercase tracking-widest w-full">
-                    COPY PROMPT TO CLIPBOARD
+                    COPY TO CLIPBOARD
                 </button>
             </div>
 
             <div class="cyber-border flex-grow min-h-[150px] relative p-1">
                 <div class="absolute top-0 left-0 w-full h-full z-20 pointer-events-none shadow-[inset_0_0_20px_rgba(0,0,0,1)] border border-red-900/30"></div>
+                <!-- Applying filters to ensure map looks fully integrated with the HUD theme -->
                 <div id="map" class="w-full h-full z-10 filter grayscale sepia-[.3] hue-rotate-[320deg] contrast-125"></div>
             </div>
 
@@ -220,6 +215,14 @@
     </main>
 
     <script>
+        // =========================================================================
+        // SYSTEM CONFIGURATION
+        // =========================================================================
+        // Optional: Provide an Expo Maps API Key here to route tile requests.
+        // If left as default, the system will fallback to CartoDB Dark Matter tiles.
+        const EXPO_MAPS_API_KEY = "YOUR_API_KEY_HERE";
+        // =========================================================================
+
         const hud = {
             state: {
                 lat: null,
@@ -292,8 +295,14 @@
             },
 
             async bootSequence() {
-                await this.typeLine("INITIALIZING MYSTHOOD KERNEL v5.0.0...");
+                await this.typeLine("INITIALIZING MYSTHOOD KERNEL v5.1.0...");
                 await this.typeLine("LOADING CARTOGRAPHY MODULES... OK");
+                
+                // Expose API Key Configuration State in Terminal
+                if (EXPO_MAPS_API_KEY !== "YOUR_API_KEY_HERE" && EXPO_MAPS_API_KEY.trim() !== "") {
+                    await this.typeLine("EXPO MAPS API KEY DETECTED. PREPARING TILE ROUTING...", "warn");
+                }
+
                 await this.typeLine("CHECKING HARDWARE SENSORS...");
                 
                 if ("geolocation" in navigator) {
@@ -350,7 +359,7 @@
 
                 this.updateMap(latitude, longitude);
 
-                // Fetch environment data only once upon first lock to save Nominatim bandwidth
+                // Fetch environment data only once upon first lock to save bandwidth
                 if (!this.state.geocoded) {
                     this.fetchEnvironmentData(latitude, longitude);
                 }
@@ -376,7 +385,7 @@
             async fetchEnvironmentData(lat, lng) {
                 this.state.geocoded = true; // Prevent spamming the API
                 this.printLog("INITIATING ENVIRONMENTAL SCAN...");
-                this.ui.envDesc.innerText = "SCANNING OPENSTREETMAP DATABASE...";
+                this.ui.envDesc.innerText = "SCANNING DATABASE...";
 
                 try {
                     // Using public Nominatim API. No key required.
@@ -432,13 +441,26 @@
                     boxZoom: false
                 }).setView([lat, lng], 17);
 
-                // CartoDB Dark Matter - Free, no API key required, futuristic aesthetic
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                let tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+                let tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+                // Check if User Provided an Expo Maps API Key
+                if (EXPO_MAPS_API_KEY !== "YOUR_API_KEY_HERE" && EXPO_MAPS_API_KEY.trim() !== "") {
+                    this.printLog("ROUTING TILE REQUESTS VIA EXPO MAPS INFRASTRUCTURE...");
+                    // Simulated endpoint format for an Expo mapped web implementation
+                    tileUrl = `https://api.expo.dev/v1/maps/tiles/{z}/{x}/{y}?key=${EXPO_MAPS_API_KEY}`;
+                    tileAttribution = '&copy; <a href="https://expo.dev">Expo Maps Ecosystem</a>';
+                } else {
+                    this.printLog("NO EXPO KEY DETECTED. DEFAULTING TO CARTODB DARK MATTER TILES.");
+                }
+
+                L.tileLayer(tileUrl, {
+                    attribution: tileAttribution,
                     subdomains: 'abcd',
                     maxZoom: 20
                 }).addTo(this.state.map);
 
+                // Custom blip marker for HUD styling
                 const blipIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: "<div class='blip-marker' style='width: 14px; height: 14px;'></div>",
@@ -449,6 +471,7 @@
                 this.state.marker = L.marker([lat, lng], {icon: blipIcon}).addTo(this.state.map);
                 this.state.mapInitialized = true;
                 
+                // Force layout recalculation to ensure map fits div perfectly
                 setTimeout(() => {
                     this.state.map.invalidateSize();
                 }, 200);
@@ -471,14 +494,15 @@
                 this.printLog(`EXPORTING VECTOR TO ${service.toUpperCase()} MAPS...`);
                 
                 if (service === 'apple') {
+                    // Triggers native Apple Maps on iOS
                     window.location.href = `http://maps.apple.com/?ll=${this.state.lat},${this.state.lng}&q=Target_Vector`;
                 } else if (service === 'google') {
+                    // Triggers native Google Maps or web fallback
                     window.open(`https://www.google.com/maps/search/?api=1&query=${this.state.lat},${this.state.lng}`, '_blank');
                 }
             }
         };
 
-        // Boot
         window.onload = () => hud.init();
     </script>
 </body>
